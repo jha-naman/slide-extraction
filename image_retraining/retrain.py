@@ -83,11 +83,11 @@ for more information on Mobilenet.
 
 To use with TensorBoard:
 
-By default, this script will log summaries to /tmp/retrain_logs directory
+By default, this script will log summaries to /app/retrain_logs directory
 
 Visualize the summaries with this command:
 
-tensorboard --logdir /tmp/retrain_logs
+tensorboard --logdir /app/retrain_logs
 
 """
 from __future__ import absolute_import
@@ -1151,13 +1151,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_graph',
       type=str,
-      default='/tmp/output_graph.pb',
+      default='/app/output_graph.pb',
       help='Where to save the trained graph.'
   )
   parser.add_argument(
       '--intermediate_output_graphs_dir',
       type=str,
-      default='/tmp/intermediate_graph/',
+      default='/app/intermediate_graph/',
       help='Where to save the intermediate graphs.'
   )
   parser.add_argument(
@@ -1172,13 +1172,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_labels',
       type=str,
-      default='/tmp/output_labels.txt',
+      default='/app/output_labels.txt',
       help='Where to save the trained graph\'s labels.'
   )
   parser.add_argument(
       '--summaries_dir',
       type=str,
-      default='/tmp/retrain_logs',
+      default='/app/retrain_logs',
       help='Where to save summary logs for TensorBoard.'
   )
   parser.add_argument(
@@ -1252,7 +1252,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--model_dir',
       type=str,
-      default='/tmp/imagenet',
+      default='/app/imagenet',
       help="""\
       Path to classify_image_graph_def.pb,
       imagenet_synset_to_human_label_map.txt, and
@@ -1262,7 +1262,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--bottleneck_dir',
       type=str,
-      default='/tmp/bottleneck',
+      default='/app/bottleneck',
       help='Path to cache bottleneck layer values as files.'
   )
   parser.add_argument(
