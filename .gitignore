@@ -2,3 +2,6 @@ tmp
 data
 *.pyc
 images
+bottleneck
+imagenet
+retrain_logs
