@@ -2,8 +2,8 @@ from pytube import YouTube
 import argparse
 import os
 import shutil
-import shlex
 import subprocess as sp
+import client
 from constants import paths
 from constants import defaults
 
@@ -42,13 +42,12 @@ def detect(url):
 
     total_images = len(input_images)
     for index, image in enumerate(input_images):
-        command = shlex.split('docker run -t -v /Users/naman/play/slides:/app  tensorflow/tensorflow:1.4.0 python /app/image_retraining/label_image.py --graph=/app/output_graph.pb --labels=/app/output_labels.txt --output_layer=final_result:0 --image=/app/tmp/input/' + image)
-        op = sp.check_output(command)
         print image
-        if 'slide' in op:
-            shutil.copy2(SPLIT_IMAGES + '/' + image, paths.SLIDES_DIR)
+        val = client.main(SPLIT_IMAGES + image)
+        if val > 0.5:
+            shutil.copy2(SPLIT_IMAGES + image, paths.SLIDES_DIR)
         else:
-            shutil.copyfile(SPLIT_IMAGES + '/' + image, './noslides/' + image)
+            shutil.copyfile(SPLIT_IMAGES + image, './noslides/' + image)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -83,11 +83,11 @@ for more information on Mobilenet.
 
 To use with TensorBoard:
 
-By default, this script will log summaries to /app/retrain_logs directory
+By default, this script will log summaries to ./retrain_logs directory
 
 Visualize the summaries with this command:
 
-tensorboard --logdir /app/retrain_logs
+tensorboard --logdir ./retrain_logs
 
 """
 from __future__ import absolute_import
@@ -823,11 +823,30 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
 
 
 def save_graph_to_file(sess, graph, graph_file_name):
-  output_graph_def = graph_util.convert_variables_to_constants(
-      sess, graph.as_graph_def(), [FLAGS.final_tensor_name])
-  with gfile.FastGFile(graph_file_name, 'wb') as f:
-    f.write(output_graph_def.SerializeToString())
-  return
+  op = sess.graph.get_tensor_by_name('final_result:0')
+  op_def = tf.saved_model.utils.build_tensor_info(op)
+  inp = sess.graph.get_tensor_by_name('DecodeJpeg/contents:0')
+  inp_def = tf.saved_model.utils.build_tensor_info(inp)
+  builder = tf.saved_model.builder.SavedModelBuilder('checkpoints')
+  legacy_init_op = tf.group(
+            tf.tables_initializer(), name='legacy_init_op')
+
+  builder.add_meta_graph_and_variables(
+    sess,
+    [tf.saved_model.tag_constants.SERVING],
+    signature_def_map={
+      "predict": tf.saved_model.signature_def_utils.build_signature_def(inputs={
+        'DecodeJpeg/contents:0': inp_def
+      },
+      outputs={
+        'scores': op_def
+      },
+      method_name=tf.saved_model.signature_constants.
+              CLASSIFY_METHOD_NAME)
+    },
+  legacy_init_op=legacy_init_op
+  )
+  builder.save()
 
 
 def prepare_file_system():
@@ -1151,13 +1170,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_graph',
       type=str,
-      default='/app/output_graph.pb',
+      default='./output_graph.pb',
       help='Where to save the trained graph.'
   )
   parser.add_argument(
       '--intermediate_output_graphs_dir',
       type=str,
-      default='/app/intermediate_graph/',
+      default='./intermediate_graph/',
       help='Where to save the intermediate graphs.'
   )
   parser.add_argument(
@@ -1172,13 +1191,13 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_labels',
       type=str,
-      default='/app/output_labels.txt',
+      default='./output_labels.txt',
       help='Where to save the trained graph\'s labels.'
   )
   parser.add_argument(
       '--summaries_dir',
       type=str,
-      default='/app/retrain_logs',
+      default='./retrain_logs',
       help='Where to save summary logs for TensorBoard.'
   )
   parser.add_argument(
@@ -1252,7 +1271,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--model_dir',
       type=str,
-      default='/app/imagenet',
+      default='./imagenet',
       help="""\
       Path to classify_image_graph_def.pb,
       imagenet_synset_to_human_label_map.txt, and
@@ -1262,7 +1281,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--bottleneck_dir',
       type=str,
-      default='/app/bottleneck',
+      default='./bottleneck',
       help='Path to cache bottleneck layer values as files.'
   )
   parser.add_argument(

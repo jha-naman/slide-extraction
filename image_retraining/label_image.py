@@ -56,11 +56,6 @@ parser.add_argument(
     default=5,
     help='Display this many predictions.')
 parser.add_argument(
-    '--graph',
-    required=True,
-    type=str,
-    help='Absolute path to graph file (.pb)')
-parser.add_argument(
     '--labels',
     required=True,
     type=str,
@@ -87,14 +82,6 @@ def load_labels(filename):
   return [line.rstrip() for line in tf.gfile.GFile(filename)]
 
 
-def load_graph(filename):
-  """Unpersists graph from file as default graph."""
-  with tf.gfile.FastGFile(filename, 'rb') as f:
-    graph_def = tf.GraphDef()
-    graph_def.ParseFromString(f.read())
-    tf.import_graph_def(graph_def, name='')
-
-
 def run_graph(image_data, labels, input_layer_name, output_layer_name,
               num_top_predictions):
   with tf.Session() as sess:
@@ -102,6 +89,7 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name,
     #   predictions will contain a two-dimensional array, where one
     #   dimension represents the input image count, and the other has
     #   predictions per class
+    tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], './checkpoints')
     softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
     predictions, = sess.run(softmax_tensor, {input_layer_name: image_data})
 
@@ -111,8 +99,7 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name,
     #   human_string = labels[node_id]
     #   score = predictions[node_id]
     #   print('%s (score = %.5f)' % (human_string, score))
-    if predictions[0] > 0.5:
-      print('slide')
+    print(predictions[0])
     return 0
 
 
@@ -127,17 +114,11 @@ def main(argv):
   if not tf.gfile.Exists(FLAGS.labels):
     tf.logging.fatal('labels file does not exist %s', FLAGS.labels)
 
-  if not tf.gfile.Exists(FLAGS.graph):
-    tf.logging.fatal('graph file does not exist %s', FLAGS.graph)
-
   # load image
   image_data = load_image(FLAGS.image)
 
   # load labels
   labels = load_labels(FLAGS.labels)
-
-  # load graph, which is stored in the default session
-  load_graph(FLAGS.graph)
 
   run_graph(image_data, labels, FLAGS.input_layer, FLAGS.output_layer,
             FLAGS.num_top_predictions)
