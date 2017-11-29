@@ -3,3 +3,6 @@ mccabe==0.4.0
 protobuf==3.0.0b2
 pytube==6.1.8
 six==1.10.0
+tensorflow==1.4.0
+grpcio==1.7.0
+tensorflow-serving-api==1.4.0
