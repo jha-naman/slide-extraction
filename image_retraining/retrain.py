@@ -827,7 +827,8 @@ def save_graph_to_file(sess, graph, graph_file_name):
   op_def = tf.saved_model.utils.build_tensor_info(op)
   inp = sess.graph.get_tensor_by_name('DecodeJpeg/contents:0')
   inp_def = tf.saved_model.utils.build_tensor_info(inp)
-  builder = tf.saved_model.builder.SavedModelBuilder('checkpoints')
+  # TODO: increment model version number automaticaly when model is retrained
+  builder = tf.saved_model.builder.SavedModelBuilder('checkpoints/1')
   legacy_init_op = tf.group(
             tf.tables_initializer(), name='legacy_init_op')
 
