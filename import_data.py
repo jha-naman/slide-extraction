@@ -64,6 +64,19 @@ TRAINING_DATA = [
              ])
 ]
 
+# slides extracted from these videos will be used only as part of validation data set
+VALIDATION_DATA = [
+    Sequence("ashrithK", "Ashrith Kulai",
+    "https://www.youtube.com/watch?v=AS9CMVU4XhI",
+    "360p", "mp4", [
+        (3, 1074), (1115, 1464), (1496, 1543), (1685, 1744)
+    ])
+]
+
 for sequence in TRAINING_DATA:
     sequence.download()
     sequence.read()
+
+for sequence in VALIDATION_DATA:
+    sequence.download()
+    sequence.read(validation_data=True)

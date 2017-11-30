@@ -22,7 +22,7 @@ class Sequence:
         self.res = res
         self.fmt = fmt
 
-        self.dir_name = paths.DATA_DIR + '/' + self.id
+        self.dir_name = paths.DATA_DIR + self.id
         self.file_path = self.dir_name + "/" + self.id + "." + self.fmt
 
         yt = YouTube(url)
@@ -42,17 +42,20 @@ class Sequence:
             print "downloading %s to %s" % (self.url, self.file_path)
             self.downloader.download(self.dir_name)
 
-    def read(self):
+    def read(self, validation_data=False):
         print "reading %s" % self.file_path
+        parent_folder = './images/' if not validation_data else './validation_images/'
+        slide_image_path = parent_folder + 'slide/'
+        noslide_image_path = parent_folder + 'noslide/'
         TEMP = paths.TEMP_DIR + '/images/'
         try:
             shutil.rmtree(TEMP)
         except OSError as e:
             pass
         create_dirs_if_not_exists(TEMP)
-        create_dirs_if_not_exists('./images')
-        create_dirs_if_not_exists('./images/slide')
-        create_dirs_if_not_exists('./images/noslide')
+        create_dirs_if_not_exists(parent_folder)
+        create_dirs_if_not_exists(slide_image_path)
+        create_dirs_if_not_exists(noslide_image_path)
 
         # TODO: use piplines instead of savings files to disk
         command = ['ffmpeg', '-n', '-i', self.file_path,
@@ -69,10 +72,10 @@ class Sequence:
             src = TEMP + file
             try:
                 if seq in self.positives:
-                    shutil.copyfile(src, './images/slide/' + video_name + file)
+                    shutil.copyfile(src, slide_image_path + video_name + file)
                     print "copying file" + file
                 else:
-                    shutil.copyfile(src, './images/noslide/' + video_name + file)
+                    shutil.copyfile(src, noslide_image_path + video_name + file)
                     print "copying no slide file" + file
             except IOError as e:
                 print "Could not read", src, e

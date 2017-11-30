@@ -121,7 +121,7 @@ FLAGS = None
 MAX_NUM_IMAGES_PER_CLASS = 2 ** 27 - 1  # ~134M
 
 
-def create_image_lists(image_dir, testing_percentage, validation_percentage):
+def create_image_lists(image_dir, validation_dir, testing_percentage, validation_percentage):
   """Builds a list of training images from the file system.
 
   Analyzes the sub folders in the image directory, splits them into stable
@@ -196,6 +196,15 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
         testing_images.append(base_name)
       else:
         training_images.append(base_name)
+    # add images from validation set
+    if gfile.Exists(validation_dir):
+      for extension in extensions:
+        val_file_glob = os.path.join(validation_dir, dir_name, '*.' + extension)
+        validation_list = []
+        validation_list.extend(gfile.Glob(val_file_glob))
+        validation_images.extend(
+          [os.path.basename(name) for name in validation_list]
+        )
     result[label_name] = {
         'dir': dir_name,
         'training': training_images,
@@ -235,6 +244,10 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
   base_name = category_list[mod_index]
   sub_dir = label_lists['dir']
   full_path = os.path.join(image_dir, sub_dir, base_name)
+  # if can not find image in image_dir and category is validation
+  # return path from the validation directory if provided
+  if FLAGS.validation_dir and category == 'validation' and not gfile.Exists(full_path):
+    full_path = os.path.join(FLAGS.validation_dir, sub_dir, base_name)
   return full_path
 
 
@@ -1004,8 +1017,12 @@ def main(_):
       create_model_graph(model_info))
 
   # Look at the folder structure, and create lists of all the images.
-  image_lists = create_image_lists(FLAGS.image_dir, FLAGS.testing_percentage,
-                                   FLAGS.validation_percentage)
+  image_lists = create_image_lists(
+    FLAGS.image_dir,
+    FLAGS.validation_dir,
+    FLAGS.testing_percentage,
+    FLAGS.validation_percentage
+  )
   class_count = len(image_lists.keys())
   if class_count == 0:
     tf.logging.error('No valid folders of images found at ' + FLAGS.image_dir)
@@ -1167,6 +1184,12 @@ if __name__ == '__main__':
       type=str,
       default='',
       help='Path to folders of labeled images.'
+  )
+  parser.add_argument(
+    '--validation_dir',
+    type=str,
+    default='',
+    help='Path to folders containing labeled images to be used in the validation set'
   )
   parser.add_argument(
       '--output_graph',
