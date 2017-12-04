@@ -1173,8 +1173,6 @@ def main(_):
     # Write out the trained graph and labels with the weights stored as
     # constants.
     save_graph_to_file(sess, graph, FLAGS.output_graph)
-    with gfile.FastGFile(FLAGS.output_labels, 'w') as f:
-      f.write('\n'.join(image_lists.keys()) + '\n')
 
 
 if __name__ == '__main__':
@@ -1211,12 +1209,6 @@ if __name__ == '__main__':
          How many steps to store intermediate graph. If "0" then will not
          store.\
       """
-  )
-  parser.add_argument(
-      '--output_labels',
-      type=str,
-      default='./output_labels.txt',
-      help='Where to save the trained graph\'s labels.'
   )
   parser.add_argument(
       '--summaries_dir',
