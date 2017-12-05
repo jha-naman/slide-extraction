@@ -7,7 +7,11 @@ Extract slides out of videos
 You need to have ffmpeg installed & in path.
 I've noticed some inconsistencies between ffmpeg versions. Please use v3.0
 
-Set up a docker container for tensorflow server following the instructions at https://www.tensorflow.org/serving/serving_inception 
+Build a docker container for tensorflow server using the provided Dockerfile
+```sh
+cd docker
+docker build --pull -t $USER/slide_detection_server -f ./Dockerfile.devel .
+```
  
 Install the required python dependencies
 ```sh
@@ -23,7 +27,7 @@ pip install -r requirements.txt
 Start the container for tensorflow you have created
 ```sh
 # attach the project dir as a volume to the container
-docker run -p 9000:9000 -v PROJECT_DIR:/app $USER/inception_serving tensorflow_model_server --port=9000 --model_name=inception --model_base_path=/app/checkpoints &> inception_log
+docker run -p 9000:9000 -v PROJECT_DIR:/app $USER/slide_detection_server tensorflow_model_server --port=9000 --model_name=inception --model_base_path=/app/checkpoints
 ```
 ```sh
 # just run this script and pass it the video url
