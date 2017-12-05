@@ -102,6 +102,7 @@ import random
 import re
 import sys
 import tarfile
+import os
 
 import numpy as np
 from six.moves import urllib
@@ -834,14 +835,12 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   tf.summary.scalar('accuracy', evaluation_step)
   return evaluation_step, prediction
 
-
 def save_graph_to_file(sess, graph, graph_file_name):
   op = sess.graph.get_tensor_by_name('final_result:0')
   op_def = tf.saved_model.utils.build_tensor_info(op)
   inp = sess.graph.get_tensor_by_name('DecodeJpeg/contents:0')
   inp_def = tf.saved_model.utils.build_tensor_info(inp)
-  # TODO: increment model version number automaticaly when model is retrained
-  builder = tf.saved_model.builder.SavedModelBuilder('checkpoints/1')
+  builder = tf.saved_model.builder.SavedModelBuilder(get_output_folder())
   legacy_init_op = tf.group(
             tf.tables_initializer(), name='legacy_init_op')
 
@@ -871,6 +870,21 @@ def prepare_file_system():
   if FLAGS.intermediate_store_frequency > 0:
     ensure_dir_exists(FLAGS.intermediate_output_graphs_dir)
   return
+
+
+def get_output_folder():
+  parent = FLAGS.output_graph if FLAGS.output_graph else './checkpoints'
+  ensure_dir_exists(parent)
+  # get a list of all folders with a natural number for name
+  # this should give us all existing models, models are always
+  # supposed to be stored in folders with a natural number as
+  # name eg. 1 2 5 etc
+  folders = [
+    f for f in os.listdir(parent)
+      if os.path.isdir(os.path.join(parent, f)) and re.match('^\d+$', f)
+  ]
+  existing_model_version = 0 if not folders else int(reversed(sorted(folders)).next())
+  return os.path.join(parent, str(existing_model_version + 1))
 
 
 def create_model_info(architecture):
@@ -1192,7 +1206,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_graph',
       type=str,
-      default='./output_graph.pb',
+      default='',
       help='Where to save the trained graph.'
   )
   parser.add_argument(
