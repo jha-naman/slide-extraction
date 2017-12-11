@@ -114,6 +114,7 @@ from tensorflow.python.platform import gfile
 from tensorflow.python.util import compat
 
 FLAGS = None
+validation_images_present = False
 
 # These are all parameters that are tied to the particular model architecture
 # we're using for Inception v3. These include things like tensor names and their
@@ -247,7 +248,8 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
   full_path = os.path.join(image_dir, sub_dir, base_name)
   # if can not find image in image_dir and category is validation
   # return path from the validation directory if provided
-  if FLAGS.validation_dir and category == 'validation' and not gfile.Exists(full_path):
+  if validation_images_present and category == 'validation' and not gfile.Exists(full_path):
+    print('found image from validation set', full_path)
     full_path = os.path.join(FLAGS.validation_dir, sub_dir, base_name)
   return full_path
 
@@ -1200,7 +1202,7 @@ if __name__ == '__main__':
   parser.add_argument(
     '--validation_dir',
     type=str,
-    default='',
+    default='./validation_images',
     help='Path to folders containing labeled images to be used in the validation set'
   )
   parser.add_argument(
@@ -1372,4 +1374,5 @@ if __name__ == '__main__':
       for more information on Mobilenet.\
       """)
   FLAGS, unparsed = parser.parse_known_args()
+  validation_images_present = gfile.Exists(FLAGS.validation_dir)
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
